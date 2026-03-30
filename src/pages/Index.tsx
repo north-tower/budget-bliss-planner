@@ -1,128 +1,25 @@
-import { useState, useCallback, useMemo } from "react";
-
-interface TableRow {
-  name: string;
-  budget: string;
-  actual: string;
-}
-
-const NEEDS_DEFAULT: TableRow[] = [
-  "Rent / Mortgage", "Utilities", "Groceries", "Insurance",
-  "Transportation", "Healthcare", "Childcare", "Other Need",
-].map((name) => ({ name, budget: "", actual: "" }));
-
-const WANTS_DEFAULT: TableRow[] = [
-  "Dining Out", "Entertainment", "Shopping", "Subscriptions",
-  "Travel", "Hobbies", "Personal Care", "Other Want",
-].map((name) => ({ name, budget: "", actual: "" }));
-
-const SAVINGS_DEFAULT: TableRow[] = [
-  "Emergency Fund", "Retirement", "Investments", "Debt Payment", "Other Savings",
-].map((name) => ({ name, budget: "", actual: "" }));
-
-function fmt(n: number) {
-  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-}
-
-function sumField(rows: TableRow[], field: "budget" | "actual") {
-  return rows.reduce((s, r) => s + (parseFloat(r[field]) || 0), 0);
-}
-
-interface BudgetTableProps {
-  title: string;
-  pct: string;
-  rows: TableRow[];
-  onChange: (rows: TableRow[]) => void;
-  colorClass: "needs" | "wants" | "savings";
-}
-
-function BudgetTable({ title, pct, rows, onChange, colorClass }: BudgetTableProps) {
-  const headerBg = {
-    needs: "bg-needs",
-    wants: "bg-wants",
-    savings: "bg-savings",
-  }[colorClass];
-
-  const updateRow = useCallback(
-    (i: number, field: keyof TableRow, value: string) => {
-      const next = [...rows];
-      next[i] = { ...next[i], [field]: value };
-      onChange(next);
-    },
-    [rows, onChange]
-  );
-
-  const budgetTotal = sumField(rows, "budget");
-  const actualTotal = sumField(rows, "actual");
-
-  return (
-    <div className="rounded-2xl border-[1.5px] border-border bg-card overflow-hidden">
-      <div className={`flex items-center justify-between px-[18px] py-[14px] pb-3 border-b-[1.5px] border-border ${headerBg}`}>
-        <h2 className="text-[1.3rem] font-bold">{title}</h2>
-        <span className="text-[0.82rem] font-medium px-3 py-1 rounded-full">{pct}</span>
-      </div>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr>
-            <th className="text-[0.72rem] font-medium tracking-wider uppercase text-muted-foreground px-3.5 py-2.5 text-left border-b border-border w-[45%]">Category</th>
-            <th className="text-[0.72rem] font-medium tracking-wider uppercase text-muted-foreground px-3.5 py-2.5 text-left border-b border-border">Budget</th>
-            <th className="text-[0.72rem] font-medium tracking-wider uppercase text-muted-foreground px-3.5 py-2.5 text-left border-b border-border">Actual</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className="border-b border-border last:border-b-0">
-              <td className="p-0">
-                <input
-                  type="text"
-                  value={row.name}
-                  onChange={(e) => updateRow(i, "name", e.target.value)}
-                  className="w-full border-none outline-none px-3.5 py-[11px] text-[0.9rem] bg-transparent text-foreground focus:bg-foreground/[0.02] placeholder:text-muted-foreground"
-                  placeholder="Category"
-                />
-              </td>
-              <td className="p-0">
-                <input
-                  type="number"
-                  value={row.budget}
-                  onChange={(e) => updateRow(i, "budget", e.target.value)}
-                  className="w-full border-none outline-none px-3.5 py-[11px] text-[0.9rem] bg-transparent text-foreground focus:bg-foreground/[0.02]"
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                />
-              </td>
-              <td className="p-0">
-                <input
-                  type="number"
-                  value={row.actual}
-                  onChange={(e) => updateRow(i, "actual", e.target.value)}
-                  className="w-full border-none outline-none px-3.5 py-[11px] text-[0.9rem] bg-transparent text-foreground focus:bg-foreground/[0.02]"
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td className="px-3.5 py-3 font-semibold text-[0.9rem] bg-foreground/[0.02] border-t-2 border-border">Total</td>
-            <td className="px-3.5 py-3 font-semibold text-[1rem] bg-foreground/[0.02] border-t-2 border-border font-mono">{fmt(budgetTotal)}</td>
-            <td className="px-3.5 py-3 font-semibold text-[1rem] bg-foreground/[0.02] border-t-2 border-border font-mono">{fmt(actualTotal)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  );
-}
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { Save, History, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
+import { BudgetTable } from "@/components/BudgetTable";
+import {
+  type TableRow,
+  NEEDS_DEFAULT, WANTS_DEFAULT, SAVINGS_DEFAULT,
+  fmt, sumField, loadCurrent, saveCurrent, saveToHistory,
+} from "@/lib/budget-storage";
 
 export default function BudgetPlanner() {
-  const [income, setIncome] = useState("");
-  const [needsRows, setNeedsRows] = useState(NEEDS_DEFAULT);
-  const [wantsRows, setWantsRows] = useState(WANTS_DEFAULT);
-  const [savingsRows, setSavingsRows] = useState(SAVINGS_DEFAULT);
+  const saved = useRef(loadCurrent());
+  const [income, setIncome] = useState(saved.current?.income ?? "");
+  const [needsRows, setNeedsRows] = useState<TableRow[]>(saved.current?.needsRows ?? NEEDS_DEFAULT);
+  const [wantsRows, setWantsRows] = useState<TableRow[]>(saved.current?.wantsRows ?? WANTS_DEFAULT);
+  const [savingsRows, setSavingsRows] = useState<TableRow[]>(saved.current?.savingsRows ?? SAVINGS_DEFAULT);
+
+  // Auto-persist current state
+  useEffect(() => {
+    saveCurrent({ income, needsRows, wantsRows, savingsRows });
+  }, [income, needsRows, wantsRows, savingsRows]);
 
   const incomeNum = parseFloat(income) || 0;
 
@@ -143,6 +40,28 @@ export default function BudgetPlanner() {
   const barPct = (val: number) =>
     totals.base > 0 ? Math.min((val / totals.base) * 100, 100) + "%" : "0%";
 
+  const handleSave = () => {
+    const monthLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    saveToHistory({
+      id: crypto.randomUUID(),
+      label: monthLabel + " Budget",
+      date: new Date().toISOString(),
+      income,
+      needsRows,
+      wantsRows,
+      savingsRows,
+    });
+    toast.success("Budget saved to history!");
+  };
+
+  const handleReset = () => {
+    setIncome("");
+    setNeedsRows(NEEDS_DEFAULT);
+    setWantsRows(WANTS_DEFAULT);
+    setSavingsRows(SAVINGS_DEFAULT);
+    toast("Budget cleared");
+  };
+
   return (
     <div className="min-h-screen px-5 pt-10 pb-20">
       {/* Header */}
@@ -153,6 +72,21 @@ export default function BudgetPlanner() {
         <p className="mt-2 text-muted-foreground text-[0.95rem] tracking-wider">
           Budget Planner — Needs · Wants · Savings
         </p>
+        {/* Action bar */}
+        <div className="flex items-center justify-center gap-2 mt-5">
+          <button onClick={handleSave}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[0.82rem] font-medium hover:opacity-90 transition-opacity">
+            <Save className="w-3.5 h-3.5" /> Save Budget
+          </button>
+          <button onClick={handleReset}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-[0.82rem] font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/[0.03] transition-colors">
+            <RotateCcw className="w-3.5 h-3.5" /> Reset
+          </button>
+          <Link to="/history"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-[0.82rem] font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/[0.03] transition-colors">
+            <History className="w-3.5 h-3.5" /> History
+          </Link>
+        </div>
       </header>
 
       {/* Income Input */}
@@ -161,18 +95,10 @@ export default function BudgetPlanner() {
           Monthly Take-Home Income
         </label>
         <div className="flex items-center border-2 border-foreground rounded-xl bg-card overflow-hidden transition-shadow focus-within:shadow-[0_0_0_4px_rgba(0,0,0,0.08)]">
-          <span className="px-3.5 text-[1.2rem] font-medium text-muted-foreground border-r-2 border-border">
-            $
-          </span>
-          <input
-            type="number"
-            value={income}
-            onChange={(e) => setIncome(e.target.value)}
-            placeholder="0.00"
-            step="0.01"
-            min="0"
-            className="border-none outline-none px-4 py-3.5 text-[1.3rem] font-medium w-full bg-transparent text-foreground"
-          />
+          <span className="px-3.5 text-[1.2rem] font-medium text-muted-foreground border-r-2 border-border">$</span>
+          <input type="number" value={income} onChange={(e) => setIncome(e.target.value)}
+            placeholder="0.00" step="0.01" min="0"
+            className="border-none outline-none px-4 py-3.5 text-[1.3rem] font-medium w-full bg-transparent text-foreground" />
         </div>
       </div>
 
@@ -190,7 +116,7 @@ export default function BudgetPlanner() {
         ))}
       </div>
 
-      {/* Tables Grid - Needs & Wants */}
+      {/* Tables Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[900px] mx-auto mb-5 animate-[fade-up_0.6s_0.2s_ease_both]">
         <BudgetTable title="Needs" pct="50%" rows={needsRows} onChange={setNeedsRows} colorClass="needs" />
         <BudgetTable title="Wants" pct="30%" rows={wantsRows} onChange={setWantsRows} colorClass="wants" />
@@ -212,9 +138,7 @@ export default function BudgetPlanner() {
               { label: "Total Actual", value: totals.totalActual },
             ].map((item, i) => (
               <div key={item.label} className={`px-[22px] py-5 ${i < 2 ? "border-r border-border max-sm:border-r-0 max-sm:border-b" : ""}`}>
-                <div className="text-[0.72rem] tracking-wider uppercase text-muted-foreground mb-1.5">
-                  {item.label}
-                </div>
+                <div className="text-[0.72rem] tracking-wider uppercase text-muted-foreground mb-1.5">{item.label}</div>
                 <div className="text-[1.4rem] font-bold font-mono">{fmt(item.value)}</div>
               </div>
             ))}
