@@ -33,7 +33,7 @@ Create a local `.env` file with:
 
 ```bash
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_ANON_KEY=your-public-anon-key
+VITE_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-public-anon-key
 ```
 
 ### 3) Frontend Supabase Helpers
