@@ -118,13 +118,34 @@ export default function BudgetPlanner() {
 
       {/* Tables Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[900px] mx-auto mb-5 animate-[fade-up_0.6s_0.2s_ease_both]">
-        <BudgetTable title="Needs" pct="50%" rows={needsRows} onChange={setNeedsRows} colorClass="needs" />
-        <BudgetTable title="Wants" pct="30%" rows={wantsRows} onChange={setWantsRows} colorClass="wants" />
+        <BudgetTable
+          title="Needs"
+          pct="50%"
+          rows={needsRows}
+          onChange={setNeedsRows}
+          colorClass="needs"
+          maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.5 : undefined}
+        />
+        <BudgetTable
+          title="Wants"
+          pct="30%"
+          rows={wantsRows}
+          onChange={setWantsRows}
+          colorClass="wants"
+          maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.3 : undefined}
+        />
       </div>
 
       {/* Savings & Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[900px] mx-auto animate-[fade-up_0.6s_0.3s_ease_both]">
-        <BudgetTable title="Savings / Debt" pct="20%" rows={savingsRows} onChange={setSavingsRows} colorClass="savings" />
+        <BudgetTable
+          title="Savings / Debt"
+          pct="20%"
+          rows={savingsRows}
+          onChange={setSavingsRows}
+          colorClass="savings"
+          maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.2 : undefined}
+        />
 
         {/* Summary Card */}
         <div className="rounded-2xl border-[1.5px] border-border bg-card overflow-hidden">

@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { type TableRow, sumField, fmt } from "@/lib/budget-storage";
 
 interface BudgetTableProps {
@@ -9,9 +10,10 @@ interface BudgetTableProps {
   onChange: (rows: TableRow[]) => void;
   colorClass: "needs" | "wants" | "savings";
   readOnly?: boolean;
+  maxCategoryTotal?: number;
 }
 
-export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly }: BudgetTableProps) {
+export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly, maxCategoryTotal }: BudgetTableProps) {
   const headerBg = {
     needs: "bg-needs",
     wants: "bg-wants",
@@ -22,9 +24,16 @@ export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly }
     (i: number, field: keyof TableRow, value: string) => {
       const next = [...rows];
       next[i] = { ...next[i], [field]: value };
+      if ((field === "budget" || field === "actual") && typeof maxCategoryTotal === "number") {
+        const nextTotal = sumField(next, field);
+        if (nextTotal > maxCategoryTotal) {
+          toast.error(`${title} ${field} total cannot exceed ${fmt(maxCategoryTotal)}.`);
+          return;
+        }
+      }
       onChange(next);
     },
-    [rows, onChange]
+    [rows, onChange, maxCategoryTotal, title]
   );
 
   const addRow = () => onChange([...rows, { name: "", budget: "", actual: "" }]);
