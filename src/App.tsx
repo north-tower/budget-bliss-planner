@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -31,6 +32,23 @@ function AppLayout() {
   const { preferences, setCurrency } = useUserPreferences(user?.id);
   const location = useLocation();
   const isAuthRoute = location.pathname === "/login";
+  const [showTips, setShowTips] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setShowTips(false);
+      return;
+    }
+    const key = `tips-dismissed-${user.id}`;
+    setShowTips(localStorage.getItem(key) !== "1");
+  }, [user?.id]);
+
+  const dismissTips = () => {
+    if (user?.id) {
+      localStorage.setItem(`tips-dismissed-${user.id}`, "1");
+    }
+    setShowTips(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -42,6 +60,8 @@ function AppLayout() {
           signOut={async () => {
             await signOut();
           }}
+          showTips={showTips}
+          onDismissTips={dismissTips}
         />
       ) : null}
       <Routes>

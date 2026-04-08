@@ -1,15 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
-import { Save, LogOut, ChevronDown, DollarSign } from "lucide-react";
+import { Save, LogOut, ChevronDown, DollarSign, Info } from "lucide-react";
 import { CURRENCY_OPTIONS } from "@/components/onboarding/OnboardingPreferences";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HeaderProps {
   user: unknown;
   preferences: { currency: string };
   setCurrency: (currency: string) => void;
   signOut: () => Promise<void>;
+  showTips?: boolean;
+  onDismissTips?: () => void;
 }
 
-export function Header({ user, preferences, setCurrency, signOut }: HeaderProps) {
+export function Header({ user, preferences, setCurrency, signOut, showTips, onDismissTips }: HeaderProps) {
   const location = useLocation();
   const isPlannerRoute = location.pathname === "/";
 
@@ -42,6 +45,9 @@ export function Header({ user, preferences, setCurrency, signOut }: HeaderProps)
               <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
               <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
             </div>
+            {showTips ? (
+              <HeaderTip text="Choose your preferred currency for all amounts." />
+            ) : null}
 
             <div className="w-px h-4 bg-border/60 mx-1" />
 
@@ -54,6 +60,7 @@ export function Header({ user, preferences, setCurrency, signOut }: HeaderProps)
                 Save budget
               </button>
             ) : null}
+            {showTips && isPlannerRoute ? <HeaderTip text="Save commits income and category rows for this month." /> : null}
 
             <div className="w-px h-4 bg-border/60 mx-1" />
 
@@ -63,12 +70,14 @@ export function Header({ user, preferences, setCurrency, signOut }: HeaderProps)
             >
               History
             </Link>
+            {showTips ? <HeaderTip text="Open saved months and jump back to planner." /> : null}
             <Link
               to="/profile"
               className="h-8 px-2.5 flex items-center rounded-lg text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all no-underline"
             >
               Profile
             </Link>
+            {showTips ? <HeaderTip text="Manage account and preferences like currency." /> : null}
 
             <div className="w-px h-4 bg-border/60 mx-1" />
 
@@ -81,9 +90,31 @@ export function Header({ user, preferences, setCurrency, signOut }: HeaderProps)
               <LogOut className="w-3 h-3" />
               Log out
             </button>
+            {showTips ? <HeaderTip text="Securely sign out of your account." /> : null}
+            {showTips ? (
+              <button
+                onClick={onDismissTips}
+                className="h-8 px-2.5 ml-1 rounded-lg border border-border/60 text-[12px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+              >
+                Got it
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>
     </header>
+  );
+}
+
+function HeaderTip({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button className="h-6 w-6 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
+          <Info className="w-3.5 h-3.5" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[220px] text-xs">{text}</TooltipContent>
+    </Tooltip>
   );
 }
