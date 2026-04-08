@@ -14,7 +14,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-53px)] flex items-center justify-center px-5 py-10">
+    <div className="min-h-[calc(100vh-53px)] flex items-center justify-center bg-background px-5 py-10">
       <AuthForm />
     </div>
   );
