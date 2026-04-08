@@ -22,9 +22,18 @@ export function useBudget(month: string) {
         setBudget(existing);
         setIncome(String(existing.income ?? 0));
       } catch {
-        if (!active) return;
-        setBudget(null);
-        setIncome("0");
+        // Auto-create a month budget so row CRUD always has a valid budget_id.
+        try {
+          const createdId = await upsertBudget(month, 0);
+          const created = await getBudgetByMonth(month);
+          if (!active) return;
+          setBudget({ ...created, id: createdId });
+          setIncome(String(created.income ?? 0));
+        } catch {
+          if (!active) return;
+          setBudget(null);
+          setIncome("0");
+        }
       } finally {
         if (active) setIsLoading(false);
       }

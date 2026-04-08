@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useSignIn, useSignUp } from "@clerk/clerk-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AuthForm() {
   const navigate = useNavigate();
-  const { isLoaded: signInLoaded, signIn, setActive: setSignInActive } = useSignIn();
-  const { isLoaded: signUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
+  const { signInWithEmail, signUpWithEmail } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,24 +18,14 @@ export function AuthForm() {
     setIsSubmitting(true);
     try {
       if (mode === "login") {
-        if (!signInLoaded) throw new Error("Sign in is not ready yet.");
-        const result = await signIn.create({
-          identifier: email,
-          password,
-        });
-        if (result.status !== "complete") throw new Error("Could not complete sign in.");
-        await setSignInActive({ session: result.createdSessionId });
+        const { error: signInError } = await signInWithEmail(email, password);
+        if (signInError) throw signInError;
         navigate("/");
       } else {
-        if (!signUpLoaded) throw new Error("Sign up is not ready yet.");
-        const result = await signUp.create({ emailAddress: email, password });
-        if (result.status !== "complete") {
-          toast.success("Account created. Verify your email to continue.");
-          setMode("login");
-          return;
-        }
-        await setSignUpActive({ session: result.createdSessionId });
-        navigate("/");
+        const { error: signUpError } = await signUpWithEmail(email, password);
+        if (signUpError) throw signUpError;
+        toast.success("Account created. You can now sign in.");
+        setMode("login");
       }
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Authentication failed.");

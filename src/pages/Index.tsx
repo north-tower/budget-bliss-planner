@@ -33,14 +33,18 @@ export default function BudgetPlanner() {
   const savingsRows = useMemo(() => toRows(grouped.savings), [grouped.savings]);
 
   const handleCategoryChange = (category: BudgetCategory, rows: TableRow[]) => {
-    if (!budget?.id) return;
+    if (!budget?.id) {
+      toast.error("No budget found for this month. Check Clerk -> Supabase JWT template setup.");
+      return;
+    }
     const currentItems = grouped[category];
 
     // Make add/remove row actions immediate so table controls feel responsive.
     if (rows.length > currentItems.length) {
       const addedRow = rows[rows.length - 1];
-      addItem(category, addedRow?.name || "New Item").catch(() => {
-        toast.error("Could not add row.");
+      addItem(category, addedRow?.name || "New Item").catch((error) => {
+        const message = error instanceof Error ? error.message : "Could not add row.";
+        toast.error(message);
       });
       return;
     }
@@ -48,8 +52,9 @@ export default function BudgetPlanner() {
     if (rows.length < currentItems.length) {
       const removed = currentItems[currentItems.length - 1];
       if (removed) {
-        deleteItem(removed.id).catch(() => {
-          toast.error("Could not remove row.");
+        deleteItem(removed.id).catch((error) => {
+          const message = error instanceof Error ? error.message : "Could not remove row.";
+          toast.error(message);
         });
       }
       return;

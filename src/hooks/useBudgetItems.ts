@@ -62,8 +62,9 @@ export function useBudgetItems(budgetId: string | null, userId: string | null) {
           const seeded = await listBudgetItems(budgetId);
           if (active) setItems(seeded as BudgetItem[]);
         }
-      } catch {
-        toast.error("Failed to load budget items.");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to load budget items.";
+        toast.error(message);
       } finally {
         if (active) setIsLoading(false);
       }
@@ -88,7 +89,7 @@ export function useBudgetItems(budgetId: string | null, userId: string | null) {
   }, [budgetId, userId]);
 
   const addItem = async (category: BudgetCategory, label = "") => {
-    if (!budgetId) return;
+    if (!budgetId) throw new Error("Missing budget id for this month.");
     const position = grouped[category].length;
     const created = await createBudgetItem({
       budget_id: budgetId,
@@ -106,9 +107,11 @@ export function useBudgetItems(budgetId: string | null, userId: string | null) {
     setItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, ...updates } : item)));
     try {
       await updateBudgetItem(itemId, updates);
-    } catch {
+    } catch (error) {
       setItems(before);
-      toast.error("Could not save item changes.");
+      const message = error instanceof Error ? error.message : "Could not save item changes.";
+      toast.error(message);
+      throw error;
     }
   };
 
@@ -117,9 +120,11 @@ export function useBudgetItems(budgetId: string | null, userId: string | null) {
     setItems((prev) => prev.filter((item) => item.id !== itemId));
     try {
       await deleteBudgetItem(itemId);
-    } catch {
+    } catch (error) {
       setItems(before);
-      toast.error("Could not delete item.");
+      const message = error instanceof Error ? error.message : "Could not delete item.";
+      toast.error(message);
+      throw error;
     }
   };
 
