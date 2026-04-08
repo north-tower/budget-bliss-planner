@@ -32,6 +32,15 @@ export interface BudgetSummaryRow {
   savings_actual: number;
 }
 
+export interface UserPreferencesRow {
+  id: string;
+  user_id: string;
+  currency: string;
+  completed_onboarding: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type BudgetItemInput = Pick<
   BudgetItemRow,
   "budget_id" | "category" | "label" | "budget_amount" | "actual_amount" | "position"
