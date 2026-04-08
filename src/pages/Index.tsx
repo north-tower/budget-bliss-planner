@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import { LogOut, Save } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { BudgetTable } from "@/components/BudgetTable";
 import { MonthPicker } from "@/components/budget/MonthPicker";
 import { IncomeInput } from "@/components/budget/IncomeInput";
 import { SummaryPanel } from "@/components/budget/SummaryPanel";
-import { OnboardingPreferences, CURRENCY_OPTIONS } from "@/components/onboarding/OnboardingPreferences";
+import { OnboardingPreferences } from "@/components/onboarding/OnboardingPreferences";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudget } from "@/hooks/useBudget";
 import { useBudgetItems } from "@/hooks/useBudgetItems";
@@ -18,8 +17,8 @@ import type { TableRow } from "@/lib/budget-storage";
 import { sumField } from "@/lib/budget-storage";
 
 export default function BudgetPlanner() {
-  const { user, isLoading: authLoading, signOut } = useAuth();
-  const { preferences, isReady: prefsReady, setCurrency, completeOnboarding } = useUserPreferences(user?.id);
+  const { user, isLoading: authLoading } = useAuth();
+  const { preferences, isReady: prefsReady, completeOnboarding } = useUserPreferences(user?.id);
   const [month, setMonth] = useState(toMonthStartISO());
   const { budget, income, setIncome, isLoading: budgetLoading } = useBudget(month);
   const { grouped, addItem, updateItem, deleteItem, isLoading: itemsLoading } = useBudgetItems(
@@ -27,6 +26,7 @@ export default function BudgetPlanner() {
     user?.id ?? null
   );
   const syncTimers = useRef<Record<string, number>>({});
+  const saveHandlerRef = useRef<(() => Promise<void>) | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const incomeNum = Number(income || 0);
@@ -98,12 +98,21 @@ export default function BudgetPlanner() {
       setIsSaving(false);
     }
   };
+  saveHandlerRef.current = handleSave;
 
   const isLoading = authLoading || budgetLoading || itemsLoading || !prefsReady;
 
   useEffect(() => {
+    const handleExternalSave = () => {
+      if (saveHandlerRef.current) {
+        void saveHandlerRef.current();
+      }
+    };
+    window.addEventListener("planner-save-request", handleExternalSave);
+
     return () => {
       Object.values(syncTimers.current).forEach((timer) => window.clearTimeout(timer));
+      window.removeEventListener("planner-save-request", handleExternalSave);
     };
   }, []);
 
@@ -113,46 +122,10 @@ export default function BudgetPlanner() {
   return (
     <div className="min-h-screen px-5 pt-10 pb-20">
       <header className="max-w-[900px] mx-auto mb-6">
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
-          <h1 className="text-[clamp(2rem,5vw,3rem)] font-black tracking-tight leading-none">
-            50 / 30 / 20
-          </h1>
-          <div className="flex items-center gap-2 flex-wrap">
-            <select
-              value={preferences.currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
-            >
-              {CURRENCY_OPTIONS.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {option.code}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs disabled:opacity-60"
-            >
-              <Save className="w-3.5 h-3.5" /> {isSaving ? "Saving..." : "Save Budget"}
-            </button>
-            <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
-              Local History
-            </Link>
-            <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground">
-              Profile
-            </Link>
-            <button
-              onClick={async () => {
-                await signOut();
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Log out
-            </button>
-          </div>
-        </div>
-        <div className="flex justify-center">
+        <h1 className="text-center text-[clamp(2rem,5vw,3rem)] font-black tracking-tight leading-none">
+          50 / 30 / 20
+        </h1>
+        <div className="mt-4 flex justify-center">
           <MonthPicker month={month} onChange={setMonth} />
         </div>
       </header>
