@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, Save } from "lucide-react";
 import { toast } from "sonner";
 import { BudgetTable } from "@/components/BudgetTable";
 import { MonthPicker } from "@/components/budget/MonthPicker";
@@ -24,6 +24,7 @@ export default function BudgetPlanner() {
     user?.id ?? null
   );
   const syncTimers = useRef<Record<string, number>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const incomeNum = Number(income || 0);
 
@@ -33,15 +34,55 @@ export default function BudgetPlanner() {
 
   const handleCategoryChange = (category: BudgetCategory, rows: TableRow[]) => {
     if (!budget?.id) return;
+    const currentItems = grouped[category];
+
+    // Make add/remove row actions immediate so table controls feel responsive.
+    if (rows.length > currentItems.length) {
+      const addedRow = rows[rows.length - 1];
+      addItem(category, addedRow?.name || "New Item").catch(() => {
+        toast.error("Could not add row.");
+      });
+      return;
+    }
+
+    if (rows.length < currentItems.length) {
+      const removed = currentItems[currentItems.length - 1];
+      if (removed) {
+        deleteItem(removed.id).catch(() => {
+          toast.error("Could not remove row.");
+        });
+      }
+      return;
+    }
+
     const key = `${category}-${month}`;
     if (syncTimers.current[key]) window.clearTimeout(syncTimers.current[key]);
     syncTimers.current[key] = window.setTimeout(() => {
-      syncCategoryRows(category, rows, grouped[category], {
+      syncCategoryRows(category, rows, currentItems, {
         addItem,
         updateItem,
         deleteItem,
       }).catch(() => toast.error("Could not sync category changes."));
     }, 400);
+  };
+
+  const handleSave = async () => {
+    if (!budget?.id) {
+      toast.error("Set your income first so we can create this month's budget.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      Object.values(syncTimers.current).forEach((timer) => window.clearTimeout(timer));
+      await syncCategoryRows("needs", needsRows, grouped.needs, { addItem, updateItem, deleteItem });
+      await syncCategoryRows("wants", wantsRows, grouped.wants, { addItem, updateItem, deleteItem });
+      await syncCategoryRows("savings", savingsRows, grouped.savings, { addItem, updateItem, deleteItem });
+      toast.success("Budget saved. You can switch months using the month picker.");
+    } catch {
+      toast.error("Could not save budget changes.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const isLoading = authLoading || budgetLoading || itemsLoading;
@@ -65,6 +106,13 @@ export default function BudgetPlanner() {
           <MonthPicker month={month} onChange={setMonth} />
         </div>
         <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs disabled:opacity-60"
+          >
+            <Save className="w-3.5 h-3.5" /> {isSaving ? "Saving..." : "Save Budget"}
+          </button>
           <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
             Local History
           </Link>
