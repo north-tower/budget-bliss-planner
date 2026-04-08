@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const CURRENCY_OPTIONS = [
   { code: "USD", symbol: "$" },
@@ -20,15 +20,19 @@ interface OnboardingPreferencesProps {
 
 export function OnboardingPreferences({ open, initialCurrency, onComplete }: OnboardingPreferencesProps) {
   const [currency, setCurrency] = useState(initialCurrency);
+  useEffect(() => {
+    if (open) setCurrency(initialCurrency);
+  }, [open, initialCurrency]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
-      <div className="w-full max-w-[420px] relative overflow-hidden rounded-[20px] border border-border bg-card px-8 pt-10 pb-8 shadow-lg">
+    <div className="fixed inset-0 z-50 bg-black/35 overflow-y-auto overflow-x-hidden">
+      <div className="min-h-full w-full flex items-start sm:items-center justify-center p-2 sm:p-4">
+      <div className="w-[calc(100vw-16px)] max-w-[420px] relative overflow-hidden rounded-[20px] border border-border bg-card px-4 sm:px-8 pt-6 sm:pt-10 pb-5 sm:pb-8 shadow-lg max-h-[calc(100dvh-16px)] sm:max-h-[calc(100dvh-32px)] overflow-y-auto">
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-needs-accent via-wants-accent to-savings-accent" />
 
-        <div className="flex items-center gap-1.5 mb-7">
+        <div className="flex items-center gap-1.5 mb-5 sm:mb-7">
           <div className="h-1.5 w-5 rounded-full bg-primary" />
           <div className="h-1.5 w-1.5 rounded-full bg-border" />
           <div className="h-1.5 w-1.5 rounded-full bg-border" />
@@ -37,21 +41,21 @@ export function OnboardingPreferences({ open, initialCurrency, onComplete }: Onb
         <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground mb-1">
           Getting started
         </p>
-        <h2 className="text-[26px] font-normal leading-tight text-foreground mb-2">
+        <h2 className="text-[21px] sm:text-[26px] font-normal leading-tight text-foreground mb-2 break-words">
           Your{" "}
           <em className="italic text-primary" style={{ fontStyle: "italic" }}>
             preferred
           </em>{" "}
           currency
         </h2>
-        <p className="text-[13.5px] text-muted-foreground leading-relaxed mb-7">
+        <p className="text-[13px] sm:text-[13.5px] text-muted-foreground leading-relaxed mb-5 sm:mb-7">
           Choose the currency you use most often. You can always update this in settings later.
         </p>
 
         <label className="block text-[11px] font-medium tracking-widest uppercase text-muted-foreground mb-2.5">
           Select currency
         </label>
-        <div className="grid grid-cols-3 gap-2 mb-7">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5 sm:mb-7">
           {CURRENCY_OPTIONS.map(({ code, symbol }) => {
             const isSelected = currency === code;
             return (
@@ -59,7 +63,7 @@ export function OnboardingPreferences({ open, initialCurrency, onComplete }: Onb
                 key={code}
                 type="button"
                 onClick={() => setCurrency(code)}
-                className={`h-12 flex flex-col items-center justify-center gap-px rounded-[10px] border transition-all duration-150 ${
+                className={`h-12 sm:h-12 flex flex-col items-center justify-center gap-px rounded-[10px] border transition-all duration-150 ${
                   isSelected
                     ? "border-[1.5px] border-primary bg-primary/10 text-foreground"
                     : "border-border bg-muted/50 text-muted-foreground hover:border-border/80 hover:text-foreground"
@@ -75,13 +79,14 @@ export function OnboardingPreferences({ open, initialCurrency, onComplete }: Onb
         <button
           type="button"
           onClick={() => onComplete(currency)}
-          className="w-full h-[46px] flex items-center justify-center gap-2 rounded-[10px] bg-primary text-primary-foreground text-[14px] font-medium tracking-wide hover:opacity-90 active:scale-[0.99] transition-all duration-150"
+          className="w-full h-[44px] sm:h-[46px] flex items-center justify-center gap-2 rounded-[10px] bg-primary text-primary-foreground text-[13px] sm:text-[14px] font-medium tracking-wide hover:opacity-90 active:scale-[0.99] transition-all duration-150"
         >
-          <span>Continue with {currency}</span>
+          <span className="truncate">Continue with {currency}</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
+      </div>
       </div>
     </div>
   );
