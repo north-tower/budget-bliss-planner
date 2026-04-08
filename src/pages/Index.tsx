@@ -6,9 +6,11 @@ import { BudgetTable } from "@/components/BudgetTable";
 import { MonthPicker } from "@/components/budget/MonthPicker";
 import { IncomeInput } from "@/components/budget/IncomeInput";
 import { SummaryPanel } from "@/components/budget/SummaryPanel";
+import { OnboardingPreferences, CURRENCY_OPTIONS } from "@/components/onboarding/OnboardingPreferences";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudget } from "@/hooks/useBudget";
 import { useBudgetItems } from "@/hooks/useBudgetItems";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { toMonthStartISO } from "@/lib/supabase/budget-api";
 import type { BudgetCategory } from "@/lib/supabase/types";
 import type { BudgetItem } from "@/types/budget";
@@ -17,6 +19,7 @@ import { sumField } from "@/lib/budget-storage";
 
 export default function BudgetPlanner() {
   const { user, isLoading: authLoading, signOut } = useAuth();
+  const { preferences, isReady: prefsReady, setCurrency, completeOnboarding } = useUserPreferences(user?.id);
   const [month, setMonth] = useState(toMonthStartISO());
   const { budget, income, setIncome, isLoading: budgetLoading } = useBudget(month);
   const { grouped, addItem, updateItem, deleteItem, isLoading: itemsLoading } = useBudgetItems(
@@ -90,7 +93,7 @@ export default function BudgetPlanner() {
     }
   };
 
-  const isLoading = authLoading || budgetLoading || itemsLoading;
+  const isLoading = authLoading || budgetLoading || itemsLoading || !prefsReady;
 
   useEffect(() => {
     return () => {
@@ -110,7 +113,18 @@ export default function BudgetPlanner() {
         <div className="mt-4">
           <MonthPicker month={month} onChange={setMonth} />
         </div>
-        <div className="flex justify-center items-center gap-2 mt-4">
+        <div className="flex justify-center items-center gap-2 mt-4 flex-wrap">
+          <select
+            value={preferences.currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+          >
+            {CURRENCY_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -132,7 +146,7 @@ export default function BudgetPlanner() {
         </div>
       </header>
 
-      <IncomeInput income={income} onChange={setIncome} />
+      <IncomeInput income={income} onChange={setIncome} currency={preferences.currency} />
 
       {isLoading ? <div className="text-center text-muted-foreground pb-6">Loading budget...</div> : null}
 
@@ -143,6 +157,7 @@ export default function BudgetPlanner() {
           rows={needsRows}
           onChange={(rows) => handleCategoryChange("needs", rows)}
           colorClass="needs"
+          currency={preferences.currency}
           maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.5 : undefined}
         />
         <BudgetTable
@@ -151,6 +166,7 @@ export default function BudgetPlanner() {
           rows={wantsRows}
           onChange={(rows) => handleCategoryChange("wants", rows)}
           colorClass="wants"
+          currency={preferences.currency}
           maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.3 : undefined}
         />
       </div>
@@ -162,10 +178,16 @@ export default function BudgetPlanner() {
           rows={savingsRows}
           onChange={(rows) => handleCategoryChange("savings", rows)}
           colorClass="savings"
+          currency={preferences.currency}
           maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.2 : undefined}
         />
-        <SummaryPanel month={month} />
+        <SummaryPanel month={month} currency={preferences.currency} />
       </div>
+      <OnboardingPreferences
+        open={prefsReady && !preferences.completedOnboarding}
+        initialCurrency={preferences.currency}
+        onComplete={completeOnboarding}
+      />
     </div>
   );
 }

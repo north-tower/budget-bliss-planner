@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { type TableRow, sumField, fmt } from "@/lib/budget-storage";
+import { type TableRow, sumField } from "@/lib/budget-storage";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 interface BudgetTableProps {
   title: string;
@@ -11,9 +12,19 @@ interface BudgetTableProps {
   colorClass: "needs" | "wants" | "savings";
   readOnly?: boolean;
   maxCategoryTotal?: number;
+  currency?: string;
 }
 
-export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly, maxCategoryTotal }: BudgetTableProps) {
+export function BudgetTable({
+  title,
+  pct,
+  rows,
+  onChange,
+  colorClass,
+  readOnly,
+  maxCategoryTotal,
+  currency = "USD",
+}: BudgetTableProps) {
   const headerBg = {
     needs: "bg-needs",
     wants: "bg-wants",
@@ -27,13 +38,13 @@ export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly, 
       if ((field === "budget" || field === "actual") && typeof maxCategoryTotal === "number") {
         const nextTotal = sumField(next, field);
         if (nextTotal > maxCategoryTotal) {
-          toast.error(`${title} ${field} total cannot exceed ${fmt(maxCategoryTotal)}.`);
+          toast.error(`${title} ${field} total cannot exceed ${formatCurrency(maxCategoryTotal, currency)}.`);
           return;
         }
       }
       onChange(next);
     },
-    [rows, onChange, maxCategoryTotal, title]
+    [rows, onChange, maxCategoryTotal, title, currency]
   );
 
   const addRow = () => onChange([...rows, { name: "", budget: "", actual: "" }]);
@@ -73,7 +84,9 @@ export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly, 
               </td>
               <td className="p-0">
                 {readOnly ? (
-                  <span className="px-3.5 py-[11px] text-[0.9rem] font-mono block">{row.budget ? fmt(parseFloat(row.budget)) : "—"}</span>
+                  <span className="px-3.5 py-[11px] text-[0.9rem] font-mono block">
+                    {row.budget ? formatCurrency(parseFloat(row.budget), currency) : "—"}
+                  </span>
                 ) : (
                   <input type="number" value={row.budget} onChange={(e) => updateRow(i, "budget", e.target.value)}
                     className="w-full border-none outline-none px-3.5 py-[11px] text-[0.9rem] bg-transparent text-foreground focus:bg-foreground/[0.02]" placeholder="0" min="0" step="0.01" />
@@ -81,7 +94,9 @@ export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly, 
               </td>
               <td className="p-0">
                 {readOnly ? (
-                  <span className="px-3.5 py-[11px] text-[0.9rem] font-mono block">{row.actual ? fmt(parseFloat(row.actual)) : "—"}</span>
+                  <span className="px-3.5 py-[11px] text-[0.9rem] font-mono block">
+                    {row.actual ? formatCurrency(parseFloat(row.actual), currency) : "—"}
+                  </span>
                 ) : (
                   <input type="number" value={row.actual} onChange={(e) => updateRow(i, "actual", e.target.value)}
                     className="w-full border-none outline-none px-3.5 py-[11px] text-[0.9rem] bg-transparent text-foreground focus:bg-foreground/[0.02]" placeholder="0" min="0" step="0.01" />
@@ -100,8 +115,12 @@ export function BudgetTable({ title, pct, rows, onChange, colorClass, readOnly, 
         <tfoot>
           <tr>
             <td className="px-3.5 py-3 font-semibold text-[0.9rem] bg-foreground/[0.02] border-t-2 border-border">Total</td>
-            <td className="px-3.5 py-3 font-semibold text-[1rem] bg-foreground/[0.02] border-t-2 border-border font-mono">{fmt(budgetTotal)}</td>
-            <td className="px-3.5 py-3 font-semibold text-[1rem] bg-foreground/[0.02] border-t-2 border-border font-mono">{fmt(actualTotal)}</td>
+            <td className="px-3.5 py-3 font-semibold text-[1rem] bg-foreground/[0.02] border-t-2 border-border font-mono">
+              {formatCurrency(budgetTotal, currency)}
+            </td>
+            <td className="px-3.5 py-3 font-semibold text-[1rem] bg-foreground/[0.02] border-t-2 border-border font-mono">
+              {formatCurrency(actualTotal, currency)}
+            </td>
             {!readOnly && <td className="bg-foreground/[0.02] border-t-2 border-border" />}
           </tr>
         </tfoot>

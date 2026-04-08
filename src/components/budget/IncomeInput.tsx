@@ -4,9 +4,10 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 interface IncomeInputProps {
   income: string;
   onChange: (next: string) => void;
+  currency: string;
 }
 
-export function IncomeInput({ income, onChange }: IncomeInputProps) {
+export function IncomeInput({ income, onChange, currency }: IncomeInputProps) {
   const incomeNumber = Number(income || 0);
   const allocation = getAllocations(incomeNumber);
 
@@ -17,7 +18,7 @@ export function IncomeInput({ income, onChange }: IncomeInputProps) {
           Monthly Take-Home Income
         </label>
         <div className="flex items-center border-2 border-foreground rounded-xl bg-card overflow-hidden">
-          <span className="px-3.5 text-[1.2rem] font-medium text-muted-foreground border-r-2 border-border">$</span>
+          <span className="px-3.5 text-[1.0rem] font-medium text-muted-foreground border-r-2 border-border">{currency}</span>
           <input
             type="number"
             value={income}
@@ -32,15 +33,15 @@ export function IncomeInput({ income, onChange }: IncomeInputProps) {
       <div className="flex gap-3 justify-center mb-11 flex-wrap">
         <div className="bg-needs px-6 py-3 rounded-full text-center min-w-[130px]">
           <p className="text-[0.72rem] tracking-wider uppercase opacity-70">50% - Needs</p>
-          <p className="text-[1.2rem] font-bold font-mono">{formatCurrency(allocation.needs)}</p>
+          <p className="text-[1.2rem] font-bold font-mono">{formatCurrency(allocation.needs, currency)}</p>
         </div>
         <div className="bg-wants px-6 py-3 rounded-full text-center min-w-[130px]">
           <p className="text-[0.72rem] tracking-wider uppercase opacity-70">30% - Wants</p>
-          <p className="text-[1.2rem] font-bold font-mono">{formatCurrency(allocation.wants)}</p>
+          <p className="text-[1.2rem] font-bold font-mono">{formatCurrency(allocation.wants, currency)}</p>
         </div>
         <div className="bg-savings px-6 py-3 rounded-full text-center min-w-[130px]">
           <p className="text-[0.72rem] tracking-wider uppercase opacity-70">20% - Savings</p>
-          <p className="text-[1.2rem] font-bold font-mono">{formatCurrency(allocation.savings)}</p>
+          <p className="text-[1.2rem] font-bold font-mono">{formatCurrency(allocation.savings, currency)}</p>
         </div>
       </div>
     </>

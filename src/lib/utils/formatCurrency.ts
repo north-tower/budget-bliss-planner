@@ -1,10 +1,10 @@
 /**
- * Formats values as USD currency for consistent budget display.
+ * Formats values as currency for consistent budget display.
  */
-export function formatCurrency(value: number) {
+export function formatCurrency(value: number, currency = "USD") {
   return value.toLocaleString("en-US", {
     style: "currency",
-    currency: "USD",
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });

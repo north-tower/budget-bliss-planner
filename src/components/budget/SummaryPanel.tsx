@@ -5,9 +5,10 @@ import type { BudgetSummary } from "@/types/budget";
 
 interface SummaryPanelProps {
   month: string;
+  currency: string;
 }
 
-export function SummaryPanel({ month }: SummaryPanelProps) {
+export function SummaryPanel({ month, currency }: SummaryPanelProps) {
   const [summary, setSummary] = useState<BudgetSummary | null>(null);
 
   useEffect(() => {
@@ -36,15 +37,15 @@ export function SummaryPanel({ month }: SummaryPanelProps) {
         <h2 className="text-[1.3rem] font-bold">Summary</h2>
       </div>
       <div className="grid grid-cols-3 max-sm:grid-cols-1">
-        <Metric label="Income" value={income} />
-        <Metric label="Total Budget" value={totalBudget} />
-        <Metric label="Total Actual" value={totalActual} />
+        <Metric label="Income" value={income} currency={currency} />
+        <Metric label="Total Budget" value={totalBudget} currency={currency} />
+        <Metric label="Total Actual" value={totalActual} currency={currency} />
       </div>
       <div className="px-[22px] py-[18px] border-t-[1.5px] border-border">
         <div className="flex justify-between text-[0.78rem] text-muted-foreground mb-2">
           <span>Spending Breakdown</span>
           <span className={`font-mono ${remaining >= 0 ? "text-needs-accent" : "text-destructive"}`}>
-            {formatCurrency(Math.abs(remaining))} {remaining >= 0 ? "remaining" : "over budget"}
+            {formatCurrency(Math.abs(remaining), currency)} {remaining >= 0 ? "remaining" : "over budget"}
           </span>
         </div>
         <div className="bg-border rounded-full h-2.5 overflow-hidden flex">
@@ -57,11 +58,11 @@ export function SummaryPanel({ month }: SummaryPanelProps) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value, currency }: { label: string; value: number; currency: string }) {
   return (
     <div className="px-[22px] py-5 border-r border-border max-sm:border-r-0 max-sm:border-b last:border-r-0">
       <div className="text-[0.72rem] tracking-wider uppercase text-muted-foreground mb-1.5">{label}</div>
-      <div className="text-[1.4rem] font-bold font-mono">{formatCurrency(value)}</div>
+      <div className="text-[1.4rem] font-bold font-mono">{formatCurrency(value, currency)}</div>
     </div>
   );
 }
