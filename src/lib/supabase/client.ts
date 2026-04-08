@@ -7,4 +7,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+declare global {
+  interface Window {
+    Clerk?: {
+      session?: {
+        getToken: (options?: { template?: string }) => Promise<string | null>;
+      };
+    };
+  }
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  accessToken: async () => {
+    const clerkToken = await window.Clerk?.session?.getToken({ template: "supabase" });
+    return clerkToken ?? null;
+  },
+});
