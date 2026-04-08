@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Save, LogOut, ChevronDown, DollarSign, Info } from "lucide-react";
+import { Save, LogOut, ChevronDown, DollarSign, Info, Menu, X } from "lucide-react";
 import { CURRENCY_OPTIONS } from "@/components/onboarding/OnboardingPreferences";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -15,10 +16,11 @@ interface HeaderProps {
 export function Header({ user, preferences, setCurrency, signOut, showTips, onDismissTips }: HeaderProps) {
   const location = useLocation();
   const isPlannerRoute = location.pathname === "/planner";
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="border-b border-border/60 bg-card/80 backdrop-blur-md sticky top-0 z-40">
-      <div className="mx-auto max-w-[900px] px-5 h-[54px] flex items-center justify-between gap-3">
+      <div className="mx-auto max-w-[900px] px-4 sm:px-5 h-[54px] flex items-center justify-between gap-3">
         <Link to="/" className="flex items-center gap-2 no-underline">
           <div className="w-[26px] h-[26px] rounded-[7px] bg-primary flex items-center justify-center shrink-0">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -29,7 +31,8 @@ export function Header({ user, preferences, setCurrency, signOut, showTips, onDi
         </Link>
 
         {user ? (
-          <div className="flex items-center gap-1">
+          <>
+          <div className="hidden md:flex items-center gap-1">
             <div className="relative group">
               <select
                 value={preferences.currency}
@@ -100,8 +103,75 @@ export function Header({ user, preferences, setCurrency, signOut, showTips, onDi
               </button>
             ) : null}
           </div>
+          <div className="md:hidden flex items-center gap-2">
+            <div className="relative">
+              <select
+                value={preferences.currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="appearance-none h-8 pl-7 pr-6 rounded-lg border border-border/60 bg-muted/50 text-[12px] font-medium text-muted-foreground focus:outline-none"
+              >
+                {CURRENCY_OPTIONS.map(({ code }) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
+              <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+            </div>
+            <button
+              onClick={() => setMobileOpen((v) => !v)}
+              className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-border/60"
+              aria-label="Toggle header menu"
+            >
+              {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+          </>
         ) : null}
       </div>
+      {user && mobileOpen ? (
+        <div className="md:hidden border-t border-border/60">
+          <div className="mx-auto max-w-[900px] px-4 py-3 flex flex-col gap-2">
+            {isPlannerRoute ? (
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new Event("planner-save-request"));
+                  setMobileOpen(false);
+                }}
+                className="h-9 px-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground text-[12px] font-medium"
+              >
+                <Save className="w-3 h-3" />
+                Save budget
+              </button>
+            ) : null}
+            <Link
+              to="/history"
+              onClick={() => setMobileOpen(false)}
+              className="h-9 px-3 inline-flex items-center rounded-lg text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/60 no-underline"
+            >
+              History
+            </Link>
+            <Link
+              to="/profile"
+              onClick={() => setMobileOpen(false)}
+              className="h-9 px-3 inline-flex items-center rounded-lg text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/60 no-underline"
+            >
+              Profile
+            </Link>
+            <button
+              onClick={() => {
+                void signOut();
+                setMobileOpen(false);
+              }}
+              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-lg border border-border/60 text-[12px] text-muted-foreground"
+            >
+              <LogOut className="w-3 h-3" />
+              Log out
+            </button>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }
