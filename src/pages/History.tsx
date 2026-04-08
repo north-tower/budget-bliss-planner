@@ -4,8 +4,12 @@ import { ArrowLeft, CalendarDays } from "lucide-react";
 import { listBudgets } from "@/lib/supabase/budget-api";
 import type { BudgetRow } from "@/lib/supabase/types";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 
 export default function HistoryPage() {
+  const { user } = useAuth();
+  const { preferences } = useUserPreferences(user?.id);
   const [budgets, setBudgets] = useState<BudgetRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -63,7 +67,7 @@ export default function HistoryPage() {
                       <p className="text-xs text-muted-foreground">Click to open in planner</p>
                     </div>
                   </div>
-                  <p className="font-mono text-sm">{formatCurrency(Number(budget.income ?? 0))}</p>
+                  <p className="font-mono text-sm">{formatCurrency(Number(budget.income ?? 0), preferences.currency)}</p>
                 </div>
               </Link>
             );

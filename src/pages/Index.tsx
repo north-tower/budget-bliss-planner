@@ -129,10 +129,9 @@ export default function BudgetPlanner() {
 
   useEffect(() => {
     const fromUrl = normalizeMonth(searchParams.get("month"));
-    if (fromUrl && fromUrl !== month) {
-      setMonth(fromUrl);
-    }
-  }, [searchParams, month]);
+    if (!fromUrl) return;
+    setMonth((prev) => (fromUrl !== prev ? fromUrl : prev));
+  }, [searchParams]);
 
   useEffect(() => {
     if (searchParams.get("month") !== month) {
