@@ -37,7 +37,7 @@ export default function BudgetPlanner() {
 
   const handleCategoryChange = (category: BudgetCategory, rows: TableRow[]) => {
     if (!budget?.id) {
-      toast.error("No budget found for this month. Check Clerk -> Supabase JWT template setup.");
+      toast.error("No budget found for this month yet. Try setting income first.");
       return;
     }
     const currentItems = grouped[category];
@@ -120,8 +120,8 @@ export default function BudgetPlanner() {
             className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
           >
             {CURRENCY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.code} value={option.code}>
+                {option.code}
               </option>
             ))}
           </select>
@@ -134,6 +134,9 @@ export default function BudgetPlanner() {
           </button>
           <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
             Local History
+          </Link>
+          <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground">
+            Profile
           </Link>
           <button
             onClick={async () => {
