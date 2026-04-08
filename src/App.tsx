@@ -32,7 +32,7 @@ const App = () => (
       <BrowserRouter>
         <div className="min-h-screen bg-background">
           <header className="border-b border-border bg-card/60 backdrop-blur">
-            <div className="mx-auto max-w-[1000px] px-5 py-3">
+            <div className="mx-auto max-w-[900px] px-5 py-3">
               <span className="text-sm font-semibold tracking-wide text-foreground">
                 NorthStack
               </span>

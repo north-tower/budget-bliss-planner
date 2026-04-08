@@ -112,46 +112,48 @@ export default function BudgetPlanner() {
 
   return (
     <div className="min-h-screen px-5 pt-10 pb-20">
-      <header className="text-center mb-6">
-        <h1 className="text-[clamp(2.4rem,6vw,4rem)] font-black tracking-tight leading-none">
-          50 / 30 / 20
-        </h1>
-        <div className="mt-4">
-          <MonthPicker month={month} onChange={setMonth} />
+      <header className="max-w-[900px] mx-auto mb-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
+          <h1 className="text-[clamp(2rem,5vw,3rem)] font-black tracking-tight leading-none">
+            50 / 30 / 20
+          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={preferences.currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            >
+              {CURRENCY_OPTIONS.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.code}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs disabled:opacity-60"
+            >
+              <Save className="w-3.5 h-3.5" /> {isSaving ? "Saving..." : "Save Budget"}
+            </button>
+            <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
+              Local History
+            </Link>
+            <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground">
+              Profile
+            </Link>
+            <button
+              onClick={async () => {
+                await signOut();
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs"
+            >
+              <LogOut className="w-3.5 h-3.5" /> Log out
+            </button>
+          </div>
         </div>
-        <div className="flex justify-center items-center gap-2 mt-4 flex-wrap">
-          <select
-            value={preferences.currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
-          >
-            {CURRENCY_OPTIONS.map((option) => (
-              <option key={option.code} value={option.code}>
-                {option.code}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs disabled:opacity-60"
-          >
-            <Save className="w-3.5 h-3.5" /> {isSaving ? "Saving..." : "Save Budget"}
-          </button>
-          <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
-            Local History
-          </Link>
-          <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground">
-            Profile
-          </Link>
-          <button
-            onClick={async () => {
-              await signOut();
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs"
-          >
-            <LogOut className="w-3.5 h-3.5" /> Log out
-          </button>
+        <div className="flex justify-center">
+          <MonthPicker month={month} onChange={setMonth} />
         </div>
       </header>
 
