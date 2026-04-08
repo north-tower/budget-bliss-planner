@@ -83,7 +83,7 @@ function AppLayout() {
       <Routes>
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
-        <Route path="/history" element={<History />} />
+        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

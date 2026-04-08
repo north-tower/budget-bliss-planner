@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { BudgetTable } from "@/components/BudgetTable";
 import { MonthPicker } from "@/components/budget/MonthPicker";
@@ -17,10 +17,12 @@ import type { TableRow } from "@/lib/budget-storage";
 import { sumField } from "@/lib/budget-storage";
 
 export default function BudgetPlanner() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMonth = normalizeMonth(searchParams.get("month")) ?? toMonthStartISO();
   const { user, isLoading: authLoading } = useAuth();
   const { preferences, isReady: prefsReady, completeOnboarding } = useUserPreferences(user?.id);
-  const [month, setMonth] = useState(toMonthStartISO());
-  const { budget, income, setIncome, isLoading: budgetLoading } = useBudget(month);
+  const [month, setMonth] = useState(initialMonth);
+  const { budget, income, setIncome, isLoading: budgetLoading, persistIncomeNow } = useBudget(month);
   const { grouped, addItem, updateItem, deleteItem, isLoading: itemsLoading } = useBudgetItems(
     budget?.id ?? null,
     user?.id ?? null
@@ -81,12 +83,21 @@ export default function BudgetPlanner() {
   };
 
   const handleSave = async () => {
-    if (!budget?.id) {
-      toast.error("Set your income first so we can create this month's budget.");
-      return;
-    }
     setIsSaving(true);
     try {
+      const hadBudgetId = Boolean(budget?.id);
+      const persistedBudget = await persistIncomeNow();
+
+      if (!persistedBudget?.id) {
+        toast.error("Could not save budget header. Please try again.");
+        return;
+      }
+
+      if (!hadBudgetId) {
+        toast.success("Income saved. You can now continue editing this month.");
+        return;
+      }
+
       Object.values(syncTimers.current).forEach((timer) => window.clearTimeout(timer));
       await syncCategoryRows("needs", needsRows, grouped.needs, { addItem, updateItem, deleteItem });
       await syncCategoryRows("wants", wantsRows, grouped.wants, { addItem, updateItem, deleteItem });
@@ -115,6 +126,19 @@ export default function BudgetPlanner() {
       window.removeEventListener("planner-save-request", handleExternalSave);
     };
   }, []);
+
+  useEffect(() => {
+    const fromUrl = normalizeMonth(searchParams.get("month"));
+    if (fromUrl && fromUrl !== month) {
+      setMonth(fromUrl);
+    }
+  }, [searchParams, month]);
+
+  useEffect(() => {
+    if (searchParams.get("month") !== month) {
+      setSearchParams({ month }, { replace: true });
+    }
+  }, [month, searchParams, setSearchParams]);
 
   if (authLoading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
@@ -183,6 +207,12 @@ export default function BudgetPlanner() {
       />
     </div>
   );
+}
+
+function normalizeMonth(value: string | null) {
+  if (!value) return null;
+  const valid = /^\d{4}-\d{2}-01$/.test(value);
+  return valid ? value : null;
 }
 
 function toRows(items: BudgetItem[]): TableRow[] {

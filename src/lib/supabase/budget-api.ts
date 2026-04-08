@@ -26,6 +26,15 @@ export async function getBudgetByMonth(month: string) {
   return data as BudgetRow;
 }
 
+export async function listBudgets() {
+  const { data, error } = await supabase
+    .from("budgets")
+    .select("*")
+    .order("month", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as BudgetRow[];
+}
+
 export async function listBudgetItems(budgetId: string) {
   const { data, error } = await supabase
     .from("budget_items")

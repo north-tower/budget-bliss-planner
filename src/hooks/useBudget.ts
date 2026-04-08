@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getBudgetByMonth, upsertBudget } from "@/lib/supabase/budget-api";
 import type { Budget } from "@/types/budget";
 
@@ -45,16 +45,22 @@ export function useBudget(month: string) {
     };
   }, [month]);
 
+  const persistIncomeNow = useCallback(async () => {
+    const parsedIncome = Number(income || 0);
+    if (Number.isNaN(parsedIncome) || parsedIncome < 0) return null;
+
+    const id = await upsertBudget(month, parsedIncome);
+    const latest = await getBudgetByMonth(month);
+    const next = { ...latest, id };
+    setBudget(next);
+    return next;
+  }, [income, month]);
+
   useEffect(() => {
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     timeoutRef.current = window.setTimeout(async () => {
-      const parsedIncome = Number(income || 0);
-      if (Number.isNaN(parsedIncome) || parsedIncome < 0) return;
-
       try {
-        const id = await upsertBudget(month, parsedIncome);
-        const latest = await getBudgetByMonth(month);
-        setBudget({ ...latest, id });
+        await persistIncomeNow();
       } catch {
         // noop: UI toasts are handled where inputs are edited
       }
@@ -63,7 +69,7 @@ export function useBudget(month: string) {
     return () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     };
-  }, [income, month]);
+  }, [income, persistIncomeNow]);
 
-  return { budget, income, setIncome, isLoading };
+  return { budget, income, setIncome, isLoading, persistIncomeNow };
 }
