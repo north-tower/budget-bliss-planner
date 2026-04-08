@@ -34,6 +34,12 @@ export default function BudgetPlanner() {
   const needsRows = useMemo(() => toRows(grouped.needs), [grouped.needs]);
   const wantsRows = useMemo(() => toRows(grouped.wants), [grouped.wants]);
   const savingsRows = useMemo(() => toRows(grouped.savings), [grouped.savings]);
+  const needsBudget = useMemo(() => sumField(needsRows, "budget"), [needsRows]);
+  const needsActual = useMemo(() => sumField(needsRows, "actual"), [needsRows]);
+  const wantsBudget = useMemo(() => sumField(wantsRows, "budget"), [wantsRows]);
+  const wantsActual = useMemo(() => sumField(wantsRows, "actual"), [wantsRows]);
+  const savingsBudget = useMemo(() => sumField(savingsRows, "budget"), [savingsRows]);
+  const savingsActual = useMemo(() => sumField(savingsRows, "actual"), [savingsRows]);
 
   const handleCategoryChange = (category: BudgetCategory, rows: TableRow[]) => {
     if (!budget?.id) {
@@ -184,7 +190,16 @@ export default function BudgetPlanner() {
           currency={preferences.currency}
           maxCategoryTotal={incomeNum > 0 ? incomeNum * 0.2 : undefined}
         />
-        <SummaryPanel month={month} currency={preferences.currency} />
+        <SummaryPanel
+          income={incomeNum}
+          needsBudget={needsBudget}
+          needsActual={needsActual}
+          wantsBudget={wantsBudget}
+          wantsActual={wantsActual}
+          savingsBudget={savingsBudget}
+          savingsActual={savingsActual}
+          currency={preferences.currency}
+        />
       </div>
       <OnboardingPreferences
         open={prefsReady && !preferences.completedOnboarding}
