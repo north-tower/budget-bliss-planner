@@ -10,7 +10,7 @@ export default function LoginPage() {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/planner" replace />;
   }
 
   return (

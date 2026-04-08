@@ -9,6 +9,7 @@ import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import Index from "./pages/Index.tsx";
+import Landing from "./pages/Landing.tsx";
 import History from "./pages/History.tsx";
 import Login from "./pages/Login.tsx";
 import Profile from "./pages/Profile.tsx";
@@ -65,7 +66,8 @@ function AppLayout() {
         />
       ) : null}
       <Routes>
-        <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/planner" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

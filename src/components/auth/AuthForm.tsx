@@ -20,7 +20,7 @@ export function AuthForm() {
       if (mode === "login") {
         const { error: err } = await signInWithEmail(email, password);
         if (err) throw err;
-        navigate("/");
+        navigate("/planner");
       } else {
         const { error: err } = await signUpWithEmail(email, password);
         if (err) throw err;

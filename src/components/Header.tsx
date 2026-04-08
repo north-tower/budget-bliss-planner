@@ -14,7 +14,7 @@ interface HeaderProps {
 
 export function Header({ user, preferences, setCurrency, signOut, showTips, onDismissTips }: HeaderProps) {
   const location = useLocation();
-  const isPlannerRoute = location.pathname === "/";
+  const isPlannerRoute = location.pathname === "/planner";
 
   return (
     <header className="border-b border-border/60 bg-card/80 backdrop-blur-md sticky top-0 z-40">

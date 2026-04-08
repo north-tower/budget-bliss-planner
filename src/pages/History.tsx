@@ -30,7 +30,7 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen px-5 pt-10 pb-20 max-w-[900px] mx-auto">
       <header className="flex items-center gap-4 mb-8">
-        <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-[0.85rem]">
+        <Link to="/planner" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-[0.85rem]">
           <ArrowLeft className="w-4 h-4" /> Planner
         </Link>
         <h1 className="text-[clamp(1.8rem,4vw,2.8rem)] font-black tracking-tight leading-none">Saved Months</h1>
@@ -56,7 +56,7 @@ export default function HistoryPage() {
             return (
               <Link
                 key={budget.id}
-                to={`/?month=${budget.month}`}
+                to={`/planner?month=${budget.month}`}
                 className="block rounded-2xl border border-border bg-card px-5 py-4 hover:bg-foreground/[0.02] transition-colors"
               >
                 <div className="flex items-center justify-between gap-4">

@@ -22,7 +22,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background px-5 pt-10 pb-20">
       <div className="max-w-[760px] mx-auto">
         <Link
-          to="/"
+          to="/planner"
           className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors no-underline"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
