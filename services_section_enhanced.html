@@ -1,0 +1,168 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+  .sv-root { font-family: 'DM Sans', sans-serif; padding: 3rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .sv-eyebrow { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 0.75rem; }
+  .sv-heading { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: var(--color-text-primary); line-height: 1.05; margin: 0 0 0.5rem; }
+  .sv-heading em { font-style: italic; font-weight: 400; color: var(--color-text-secondary); }
+  .sv-subtext { font-size: 15px; color: var(--color-text-secondary); font-weight: 300; max-width: 440px; line-height: 1.6; }
+  .sv-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: 3rem; border-bottom: 0.5px solid var(--color-border-tertiary); padding-bottom: 2rem; }
+  .sv-header-left {}
+  .sv-cta-link { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary); padding: 10px 20px; border-radius: 100px; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+  .sv-cta-link:hover { color: var(--color-text-primary); border-color: var(--color-border-primary); background: var(--color-background-secondary); }
+
+  .sv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--color-border-tertiary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .sv-card { background: var(--color-background-primary); padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; cursor: pointer; transition: background 0.2s; position: relative; overflow: hidden; }
+  .sv-card:hover { background: var(--color-background-secondary); }
+  .sv-card:hover .sv-card-arrow { opacity: 1; transform: translate(0, 0); }
+  .sv-card:hover .sv-card-num { opacity: 0.04; }
+
+  .sv-card-num { font-family: 'Syne', sans-serif; font-size: 80px; font-weight: 800; color: var(--color-text-primary); opacity: 0.035; position: absolute; top: -12px; right: 12px; line-height: 1; pointer-events: none; transition: opacity 0.2s; }
+  .sv-icon-wrap { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sv-icon-wrap svg { width: 18px; height: 18px; }
+
+  .sv-card-meta { display: flex; align-items: center; justify-content: space-between; }
+  .sv-card-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; }
+
+  .sv-card-title { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700; color: var(--color-text-primary); line-height: 1.2; margin: 0; }
+  .sv-card-desc { font-size: 13.5px; color: var(--color-text-secondary); line-height: 1.65; font-weight: 300; }
+  .sv-divider { height: 0.5px; background: var(--color-border-tertiary); }
+  .sv-items { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 7px; }
+  .sv-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
+  .sv-item-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+  .sv-card-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+  .sv-card-arrow { font-size: 13px; font-weight: 500; color: var(--color-text-primary); opacity: 0; transform: translate(-6px, 4px); transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+  .sv-stat { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--color-text-primary); }
+  .sv-stat-label { font-size: 11px; color: var(--color-text-secondary); font-weight: 400; }
+
+  .c1 .sv-icon-wrap { background: #E6F1FB; }
+  .c1 .sv-icon-wrap svg { stroke: #185FA5; }
+  .c1 .sv-card-tag { background: #E6F1FB; color: #185FA5; }
+  .c1 .sv-item-dot { background: #378ADD; }
+  .c1 .sv-stat { color: #185FA5; }
+
+  .c2 .sv-icon-wrap { background: #E1F5EE; }
+  .c2 .sv-icon-wrap svg { stroke: #0F6E56; }
+  .c2 .sv-card-tag { background: #E1F5EE; color: #0F6E56; }
+  .c2 .sv-item-dot { background: #1D9E75; }
+  .c2 .sv-stat { color: #0F6E56; }
+
+  .c3 .sv-icon-wrap { background: #EEEDFE; }
+  .c3 .sv-icon-wrap svg { stroke: #534AB7; }
+  .c3 .sv-card-tag { background: #EEEDFE; color: #534AB7; }
+  .c3 .sv-item-dot { background: #7F77DD; }
+  .c3 .sv-stat { color: #534AB7; }
+
+  @media (prefers-color-scheme: dark) {
+    .c1 .sv-icon-wrap { background: #0C447C; }
+    .c1 .sv-icon-wrap svg { stroke: #85B7EB; }
+    .c1 .sv-card-tag { background: #0C447C; color: #85B7EB; }
+    .c1 .sv-stat { color: #85B7EB; }
+    .c2 .sv-icon-wrap { background: #085041; }
+    .c2 .sv-icon-wrap svg { stroke: #5DCAA5; }
+    .c2 .sv-card-tag { background: #085041; color: #5DCAA5; }
+    .c2 .sv-stat { color: #5DCAA5; }
+    .c3 .sv-icon-wrap { background: #3C3489; }
+    .c3 .sv-icon-wrap svg { stroke: #AFA9EC; }
+    .c3 .sv-card-tag { background: #3C3489; color: #AFA9EC; }
+    .c3 .sv-stat { color: #AFA9EC; }
+  }
+</style>
+
+<h2 class="sr-only">Services section showcasing three digital service offerings</h2>
+
+<div class="sv-root">
+  <div class="sv-header">
+    <div class="sv-header-left">
+      <p class="sv-eyebrow">What we do</p>
+      <h2 class="sv-heading">Digital solutions<br><em>built to perform</em></h2>
+    </div>
+    <div>
+      <p class="sv-subtext">Comprehensive digital services tailored to help your business grow, scale, and stand out.</p>
+    </div>
+  </div>
+
+  <div class="sv-grid">
+    <div class="sv-card c1">
+      <span class="sv-card-num">01</span>
+      <div class="sv-card-meta">
+        <div class="sv-icon-wrap">
+          <svg fill="none" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </div>
+        <span class="sv-card-tag">Development</span>
+      </div>
+      <div>
+        <h3 class="sv-card-title">Web & App<br>Development</h3>
+      </div>
+      <p class="sv-card-desc">Scalable, performant applications crafted with modern frameworks and best practices.</p>
+      <div class="sv-divider"></div>
+      <ul class="sv-items">
+        <li class="sv-item"><span class="sv-item-dot"></span>Custom web applications</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Mobile-first development</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>API design & integration</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Performance optimization</li>
+      </ul>
+      <div class="sv-card-footer">
+        <div><span class="sv-stat">120+</span><br><span class="sv-stat-label">projects shipped</span></div>
+        <span class="sv-card-arrow">Learn more →</span>
+      </div>
+    </div>
+
+    <div class="sv-card c2">
+      <span class="sv-card-num">02</span>
+      <div class="sv-card-meta">
+        <div class="sv-icon-wrap">
+          <svg fill="none" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6.75v6.75" />
+          </svg>
+        </div>
+        <span class="sv-card-tag">Strategy</span>
+      </div>
+      <div>
+        <h3 class="sv-card-title">Digital Marketing<br>& Growth</h3>
+      </div>
+      <p class="sv-card-desc">Data-led campaigns that attract, convert, and retain the right customers at scale.</p>
+      <div class="sv-divider"></div>
+      <ul class="sv-items">
+        <li class="sv-item"><span class="sv-item-dot"></span>SEO & content strategy</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Paid media management</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Conversion rate optimisation</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Analytics & reporting</li>
+      </ul>
+      <div class="sv-card-footer">
+        <div><span class="sv-stat">3.4×</span><br><span class="sv-stat-label">avg. ROAS improvement</span></div>
+        <span class="sv-card-arrow">Learn more →</span>
+      </div>
+    </div>
+
+    <div class="sv-card c3">
+      <span class="sv-card-num">03</span>
+      <div class="sv-card-meta">
+        <div class="sv-icon-wrap">
+          <svg fill="none" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+          </svg>
+        </div>
+        <span class="sv-card-tag">Design</span>
+      </div>
+      <div>
+        <h3 class="sv-card-title">UX & Brand<br>Design</h3>
+      </div>
+      <p class="sv-card-desc">Purposeful design systems and brand identities that build trust and drive engagement.</p>
+      <div class="sv-divider"></div>
+      <ul class="sv-items">
+        <li class="sv-item"><span class="sv-item-dot"></span>User research & testing</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>UI & design systems</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Brand identity & guidelines</li>
+        <li class="sv-item"><span class="sv-item-dot"></span>Prototyping & wireframing</li>
+      </ul>
+      <div class="sv-card-footer">
+        <div><span class="sv-stat">98%</span><br><span class="sv-stat-label">client satisfaction</span></div>
+        <span class="sv-card-arrow">Learn more →</span>
+      </div>
+    </div>
+  </div>
+</div>
